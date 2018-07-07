@@ -1,0 +1,19 @@
+* Date2name
+  
+Date2name is an Emacs package inspired by [[https://github.com/novoid/date2name][date2name]] by [[https://github.com/novoid/][novoid]]. It can add ISO-Timestamps to files in dired.
+
+** Installation
+Clone this git repository and load =date2name.el=.
+
+** Usage
+
+In dired call =date2name-dired-add-date-to-name= to add the modification date of the file to the filename. With the prefix *C-u* the user is instead prompted to insert a date using the wonderful org-read-date.
+The same is true for =filetags-dired-add-datetime-to-name= only that it also adds the time.
+The format is again the same as in [[https://github.com/novoid/date2name][date2name]] of novoid. 
+: 2018-07-06_test.txt
+: 2018-07-06T13.53.09_test.txt
+Unfortunately right now this format should not be changed as it must match a corresponding regexp to remove potential timestamps already in the filename. 
+
+
+** Related projects
+   Also inspired by novoid's work: [[https://github.com/DerBeutlin/filetags.el][filetags.el]] 
