@@ -26,37 +26,59 @@
 ;;; Code:
 
 (require 'org)
-(defvar date2name-date-regexp "^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-9][0-9]_"
+(defvar date2name-date-regexp "^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-9][0-9]"
   "regexp for detecting date in front of filename")
 
-(defvar date2name-date-format "%Y-%m-%d_"
-  "format for formatting date in front of filename")
+(defvar date2name-date-format "%Y-%m-%d" "format for formatting date in front of filename")
 
-(defvar date2name-datetime-regexp "^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-9][0-9]T[0-2][0-9].[0-5][0-9].[0-5][0-9]_"
+(defvar date2name-datetime-regexp "^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-9][0-9]T[0-2][0-9].[0-5][0-9].[0-5][0-9]"
   "regexp for detecting datetime in front of filename")
 
 
-(defvar date2name-datetime-format "%Y-%m-%dT%H.%M.%S_"
+(defvar date2name-datetime-format "%Y-%m-%dT%H.%M.%S"
   "format for formatting datetime in front of filename")
+
+(defvar date2name-default-separation-character
+  "_" "character to use to seperate timestamp and filename")
+
+(defvar date2name-default-separation-character-regexp
+  "[ _]" "regexp for characters that can separate timestamp and filename")
+
+(defcustom date2name-enable-smart-separation-character-chooser
+  nil "if t then if the originial filename contains at least on space, a space is used for seperation,
+   otherwise date2name-default-seperation-character is used")
+
+
+(defun date2name-choose-separation-character (path)
+  (if date2name-enable-smart-separation-character-chooser
+      (let ((filename (file-name-nondirectory path)))
+        (if (string-match-p (regexp-quote " ")
+                            filename)
+            " "
+          date2name-default-separation-character))
+    date2name-default-separation-character))
 
 (defun date2name-remove-date (path)
   "remove potential prefix dates from PATH and return the new path"
   (let ((directory (file-name-directory path))
         (file-name (file-name-nondirectory path)))
     (concat directory
-            (replace-regexp-in-string date2name-date-regexp
+            (replace-regexp-in-string (concat date2name-date-regexp date2name-default-separation-character-regexp)
                                       ""
-                                      (replace-regexp-in-string date2name-datetime-regexp
-                                                                "" file-name)))))
+                                      (replace-regexp-in-string (concat date2name-datetime-regexp date2name-default-separation-character-regexp)
+                                                                ""
+                                                                file-name)))))
 
 (defun date2name-prepend-date (path time &optional withtime)
   "prepends TIME to PATH if WITHTIME is not nil also with time otherwise only date"
   (let ((directory (file-name-directory path))
         (filename (date2name-remove-date (file-name-nondirectory path)))
         (datestring (if withtime
-                        (format-time-string date2name-datetime-format
+                        (format-time-string (concat date2name-datetime-format
+                                                    (date2name-choose-separation-character path))
                                             time)
-                      (format-time-string date2name-date-format
+                      (format-time-string (concat date2name-date-format
+                                                  (date2name-choose-separation-character path))
                                           time))))
     (concat directory datestring filename)))
 
