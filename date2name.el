@@ -46,7 +46,13 @@
 
 (defcustom date2name-enable-smart-separation-character-chooser
   nil "if t then if the originial filename contains at least on space, a space is used for seperation,
-   otherwise date2name-default-seperation-character is used")
+   otherwise date2name-default-seperation-character is used
+
+Example if t:
+
+    foo_bar.txt -> 20180724T13.48.25_foo_bar.txt
+    foo bar.txt -> 20180724T13.48.25 foo bar.txt
+")
 
 
 (defun date2name-choose-separation-character (path)
