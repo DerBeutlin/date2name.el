@@ -99,10 +99,16 @@
                      '((dired-get-filename)))))
     (dolist (filename filenames)
       (let ((date (if (not arg)
-                      (file-attribute-modification-time (file-attributes filename))
+                      (date2name-file-attribute-modification-time (file-attributes filename))
                     (org-read-date withtime t))))
         (date2name-prepend-date-write filename date
                                       withtime)))))
+
+(if (fboundp 'file-attribute-modification-time)
+    (defalias 'date2name-file-attribute-modification-time 'file-attribute-modification-time)
+  (defsubst date2name-file-attribute-modification-time (attributes)
+    "extracts the modification time from ATTRIBUTES"
+    (nth 5 attributes)))
 
 (defun date2name-dired-add-date-to-name (arg)
   "apply to all marked files or if no files is marked apply to the file on point the following
