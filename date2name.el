@@ -98,15 +98,17 @@ Example if t:
 (defun date2name-add-date-to-name (arg &optional withtime)
   "apply to all marked files or if no files is marked apply to the file on point the following
    if ARG is nil get the modification time and prepend it
-   if ARG is not nil prompt for the user to input time
+   with one prefix arg prompt for the user to input time (once for each file)
+   with two prefix args promt for the time once and use the same time for each file 
    if withtime is notnil also prepend the times otherwise only the dates"
   (let ((filenames (if (dired-get-marked-files)
                        (dired-get-marked-files)
-                     '((dired-get-filename)))))
+                     '((dired-get-filename))))
+        (save-date (when (equal (prefix-numeric-value arg) 16) (org-read-date withtime t))))
     (dolist (filename filenames)
-      (let ((date (if (not arg)
-                      (date2name-file-attribute-modification-time (file-attributes filename))
-                    (org-read-date withtime t))))
+      (let ((date (if (not save-date)
+                      (if (not arg) (date2name-file-attribute-modification-time (file-attributes filename)) (org-read-date withtime t))
+                    save-date)))
         (date2name-prepend-date-write filename date
                                       withtime)))))
 

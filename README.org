@@ -9,7 +9,7 @@ Clone this git repository and load =date2name.el=.
 
 ** Usage
 
-In dired call =date2name-dired-add-date-to-name= to add the modification date of the file to the filename. With the prefix *C-u* the user is instead prompted to insert a date using the wonderful org-read-date.
+In dired call =date2name-dired-add-date-to-name= to add the modification date of the file to the filename. With the prefix *C-u* the user is instead prompted to insert a date using the wonderful org-read-date. With two prefixes *C-u* the user is only prompted once for all marked files.
 The same is true for =filetags-dired-add-datetime-to-name= only that it also adds the time.
 The format is again the same as in [[https://github.com/novoid/date2name][date2name]] of novoid. 
 : 2018-07-06_test.txt
