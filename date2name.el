@@ -2,9 +2,11 @@
 
 ;; Copyright (C) 2018  Max Beutelspacher
 
-;; Author: Max Beutelspacher 
+;; Author: Max Beutelspacher
+;; URL: https://github.com/DerBeutlin/date2name.el
 ;; Keywords: files, convenience
 ;; Version: 0.0.1
+;; Package-Requires: ((emacs "24.4"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -21,41 +23,54 @@
 
 ;;; Commentary:
 
-;; 
+;; A package to add daystamps and timestamps to filenames
 
 ;;; Code:
 
 (require 'org)
-(defvar date2name-date-regexp "^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-9][0-9]"
-  "regexp for detecting date in front of filename")
+(require 'dired)
 
-(defvar date2name-date-format "%Y-%m-%d" "format for formatting date in front of filename")
+(defgroup date2name nil "A helper for managing date and timestamps directly in the filename"
+  :group 'applications)
 
-(defvar date2name-datetime-regexp "^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-9][0-9]T[0-2][0-9].[0-5][0-9].[0-5][0-9]"
-  "regexp for detecting datetime in front of filename")
+(defvar date2name-date-regexp "^[0-9]\\{4\\}-[0-1][0-9]-[0-3][0-9]"
+  "Regexp for detecting date in front of filename.
+Should fit to the format in the variable `date2name-date-format'.")
 
+(defvar date2name-date-format "%Y-%m-%d"
+  "Format for formatting date at the beginning of the filename.
+Should fit to the regexp in the variable `date2name-date-regexp'.")
+
+(defvar date2name-datetime-regexp "^[0-9]\\{4\\}-[0-1][0-9]-[0-3][0-9]T[0-2][0-9].[0-5][0-9].[0-5][0-9]"
+  "Regexp for detecting datetime in front of filename.
+Should fit to the format in the variable `date2name-datetime-format'.")
 
 (defvar date2name-datetime-format "%Y-%m-%dT%H.%M.%S"
-  "format for formatting datetime in front of filename")
+  "Format for formatting datetime at the beginning of the filename.
+Should fit to the regexp in the variable `date2name-datetime-regexp'.")
 
-(defvar date2name-default-separation-character
-  "_" "character to use to seperate timestamp and filename")
+(defvar date2name-default-separation-character "_"
+  "Character which is used to seperate timestamp and filename.
+if the variable `date2name-enable-smart-separation-character-chooser'
+this character is only chosen if the filename does not contain a space,
+otherwise a space is used as separation character.")
 
-(defvar date2name-default-separation-character-regexp
-  "[ _]" "regexp for characters that can separate timestamp and filename")
+(defvar date2name-default-separation-character-regexp "[ _]"
+  "Regexp for characters that can separate timestamp and filename.")
 
-(defcustom date2name-enable-smart-separation-character-chooser
-  nil "if t then if the originial filename contains at least on space, a space is used for seperation,
-   otherwise date2name-default-seperation-character is used
-
+(defcustom date2name-enable-smart-separation-character-chooser nil
+  "If t then the separation character depends on the filename.
+If the original filename contains at least on space,
+a space is used for seperation,
+otherwise the variable `date2name-default-seperation-character' is used.
 Example if t:
 
     foo_bar.txt -> 20180724T13.48.25_foo_bar.txt
-    foo bar.txt -> 20180724T13.48.25 foo bar.txt
-")
+    foo bar.txt -> 20180724T13.48.25 foo bar.txt" :type 'bool)
 
 
 (defun date2name-choose-separation-character (path)
+  "Select the right separition character depending on the PATH."
   (if date2name-enable-smart-separation-character-chooser
       (let ((filename (file-name-nondirectory path)))
         (if (string-match-p (regexp-quote " ")
@@ -65,7 +80,7 @@ Example if t:
     date2name-default-separation-character))
 
 (defun date2name-remove-date (path)
-  "remove potential prefix dates from PATH and return the new path"
+  "Remove potential prefixed dates from PATH and return the new path."
   (let ((directory (file-name-directory path))
         (file-name (file-name-nondirectory path)))
     (concat directory
@@ -76,7 +91,11 @@ Example if t:
                                                                 file-name)))))
 
 (defun date2name-prepend-date (path time &optional withtime)
-  "prepends TIME to PATH if WITHTIME is not nil also with time otherwise only date"
+  "Prepend TIME to PATH.
+If WITHTIME is not nil a timestamp in the format of
+the variable `date2name-datetime-format' is used.
+Otherwise a datestamp in the format of the variable
+`date2name-date-format' is used."
   (let ((directory (file-name-directory path))
         (filename (date2name-remove-date (file-name-nondirectory path)))
         (datestring (if withtime
@@ -90,17 +109,26 @@ Example if t:
 
 
 (defun date2name-prepend-date-write (path time &optional withtime)
-  "prepends TIME to PATH and renames the file if WITHTIME is not nil also with time otherwise only date"
+  "Prepend TIME to PATH and renames the file.
+If WITHTIME is not nil a timestamp in the format of
+the variable `date2name-datetime-format' is used.
+Otherwise a datestamp in the format of the variable
+`date2name-date-format' is used."
   (let ((new-path (date2name-prepend-date path time withtime)))
-    (when (not (string= path new-path))
+    (unless (string= path new-path)
       (dired-rename-file path new-path nil))))
 
 (defun date2name-add-date-to-name (arg &optional withtime)
-  "apply to all marked files or if no files is marked apply to the file on point the following
-   if ARG is nil get the modification time and prepend it
-   with one prefix arg prompt for the user to input time (once for each file)
-   with two prefix args promt for the time once and use the same time for each file 
-   if withtime is notnil also prepend the times otherwise only the dates"
+  "Add date to filenames.
+The filenames are all marked files in dired or the
+file under the point if no files are marked.
+If ARG is nil use the modification time of the file.
+With one prefix arg, prompt for a time individually for each file.
+With two prefix args prompt for one time for all files.
+If WITHTIME is not nil a timestamp in the format of
+the variable `date2name-datetime-format' is used.
+Otherwise a datestamp in the format of the variable
+`date2name-date-format' is used."
   (let ((filenames (if (dired-get-marked-files)
                        (dired-get-marked-files)
                      '((dired-get-filename))))
@@ -112,23 +140,33 @@ Example if t:
         (date2name-prepend-date-write filename date
                                       withtime)))))
 
-(if (fboundp 'file-attribute-modification-time)
-    (defalias 'date2name-file-attribute-modification-time 'file-attribute-modification-time)
-  (defsubst date2name-file-attribute-modification-time (attributes)
-    "extracts the modification time from ATTRIBUTES"
-    (nth 5 attributes)))
+(defun date2name-file-attribute-modification-time (attributes)
+  "Extract the modification time from ATTRIBUTES."
+  (if (fboundp 'file-attribute-modification-time)
+      (file-attribute-modification-time attributes)
+      (nth 5 attributes)))
 
 (defun date2name-dired-add-date-to-name (arg)
-  "apply to all marked files or if no files is marked apply to the file on point the following
-   if ARG is nil get the modification date and prepend it
-   if ARG is not nil prompt for the user to input date"
+  "Add date to filenames.
+The filenames are all marked files in dired or the
+file under the point if no files are marked.
+If ARG is nil use the modification time of the file.
+With one prefix arg, prompt for a time individually for each file.
+With two prefix args prompt for one time for all files.
+The format of the variable `date2name-date-format' is used
+for the daystamp."
   (interactive "P")
   (date2name-add-date-to-name arg nil))
 
 (defun date2name-dired-add-datetime-to-name (arg)
-  "apply to all marked files or if no files is marked apply to the file on point the following
-   if ARG is nil get the modification time and prepend it
-   if ARG is not nil prompt for the user to input time"
+  "Add date to filenames.
+The filenames are all marked files in dired or the
+file under the point if no files are marked.
+If ARG is nil use the modification time of the file.
+With one prefix arg, prompt for a time individually for each file.
+With two prefix args prompt for one time for all files.
+The format of the variable `date2name-datetime-format' is used
+for the timestamp."
   (interactive "P")
   (date2name-add-date-to-name arg t))
 
