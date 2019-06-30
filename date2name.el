@@ -146,6 +146,7 @@ Otherwise a datestamp in the format of the variable
       (file-attribute-modification-time attributes)
       (nth 5 attributes)))
 
+;;;###autoload
 (defun date2name-dired-add-date-to-name (arg)
   "Add date to filenames.
 The filenames are all marked files in dired or the
@@ -158,6 +159,7 @@ for the daystamp."
   (interactive "P")
   (date2name-add-date-to-name arg nil))
 
+;;;###autoload
 (defun date2name-dired-add-datetime-to-name (arg)
   "Add date to filenames.
 The filenames are all marked files in dired or the
