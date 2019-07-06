@@ -1,11 +1,11 @@
 [[https://travis-ci.org/DerBeutlin/date2name.el][file:https://travis-ci.org/DerBeutlin/date2name.el.svg?branch=master]]
-
+[[https://melpa.org/#/date2name][file:https://melpa.org/packages/date2name-badge.svg]]
 * Date2name
   
 Date2name is an Emacs package inspired by [[https://github.com/novoid/date2name][date2name]] by [[https://github.com/novoid/][novoid]]. It can add ISO-Timestamps to files in dired.
 
 ** Installation
-Clone this git repository and load =date2name.el=.
+   Install *date2name* from melpa.
 
 ** Usage
 
