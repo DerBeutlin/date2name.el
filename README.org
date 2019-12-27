@@ -1,4 +1,4 @@
-[[https://travis-ci.org/DerBeutlin/date2name.el][file:https://travis-ci.org/DerBeutlin/date2name.el.svg?branch=master]]
+[[file:https://github.com/DerBeutlin/date2name.el/workflows/CI/badge.svg]]
 [[https://melpa.org/#/date2name][file:https://melpa.org/packages/date2name-badge.svg]]
 * Date2name
   
